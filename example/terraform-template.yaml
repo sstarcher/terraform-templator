@@ -1,0 +1,11 @@
+variable: {}
+
+MyModule:
+  common:
+    output: common-value
+    value: null
+  FirstModule:
+    value: whaaaaa
+  SecondModule: 
+    output: SecondModule - overriden
+

@@ -1,0 +1,5 @@
+MyModule:
+  FirstModule: {}
+  SecondModule: 
+    value: we must supply a value as nulls common has a null value
+
