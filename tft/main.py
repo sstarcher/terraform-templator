@@ -108,6 +108,7 @@ def follow_path(data, path):
 
 
 def merge_path(data, template, path):
+    common_data = {}
     if len(path) > 1:
         common_data = follow_path(template, path[:-1])
 
