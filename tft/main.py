@@ -95,7 +95,7 @@ def gather_yaml():
     for file in os.listdir("."):
         if file.endswith(".yaml"):
             with open(file, 'r') as stream:
-                process_yaml(yaml.load(stream))
+                process_yaml(yaml.load(stream), file)
 
 
 def follow_path(data, path):
@@ -146,7 +146,7 @@ def convert_to_tf(data):
     return tf
 
 
-def process_yaml(yaml_data):
+def process_yaml(yaml_data, filename):
     with open("../terraform-template.yaml", 'r') as stream:
         template = yaml.load(stream)
 
@@ -166,11 +166,11 @@ def process_yaml(yaml_data):
 
     validate(yaml_data)
     tf_data = convert_to_tf(yaml_data)
-    dump(tf_data)
+    dump(tf_data, filename)
 
 
-def dump(data):
-    with open('generated-terraform-templator.tf', 'w') as fp:
+def dump(data, filename):
+    with open('{}-generated.tf'.format(filename), 'w') as fp:
         json.dump(data, fp)
 
 
