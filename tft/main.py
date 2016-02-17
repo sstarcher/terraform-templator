@@ -49,8 +49,14 @@ class DefaultHelpParser(argparse.ArgumentParser):
 
 def environments():
     envs = next(os.walk('.'))[1]
-    envs.remove('modules')
-    envs.remove('.terraform')
+    try:
+        envs.remove('modules')
+    except ValueError:
+        pass
+    try:
+        envs.remove('.terraform')
+    except ValueError:
+        pass
     return envs
 
 
