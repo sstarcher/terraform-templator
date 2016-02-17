@@ -62,7 +62,13 @@ def environments():
 
 def parser():
     parser = DefaultHelpParser(
-        description='Terraform wrapper for locking and templating', prog="tft")
+        prog="tft",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='''Terraform wrapper for locking and templating''',
+        epilog='''Environment Variables:
+TERRAFORM_HOME - Specifies a global Terraform home
+CONSUL_HTTP_ADDR - If set attempts to use Consul for locking of Terraform'''
+        )
 
     commands_help = ','.join(commands.keys())
     parser.add_argument('command',
