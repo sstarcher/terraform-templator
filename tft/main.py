@@ -47,6 +47,13 @@ class DefaultHelpParser(argparse.ArgumentParser):
         sys.exit(2)
 
 
+def environments():
+    envs = next(os.walk('.'))[1]
+    envs.remove('modules')
+    envs.remove('.terraform')
+    return envs
+
+
 def parser():
     parser = DefaultHelpParser(
         description='Terraform wrapper for locking and templating', prog="tft")
@@ -57,9 +64,9 @@ def parser():
                         help=commands_help,
                         metavar="COMMAND")
 
-    environments = ['test', 'prod']
+    env = environments()
     parser.add_argument('-e', '--environment',
-                        choices=environments, help=','.join(environments))
+                        choices=env, help=','.join(env))
     parser.add_argument('-v', '--verbose', action='store_true')
 
     args = parser.parse_args()

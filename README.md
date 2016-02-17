@@ -9,6 +9,11 @@ Terraform Module Templator
 ## Reason
 In our usage of terraform we wanted to be able to re-use modules with multiple common parameters.  We started by having a new module that contained this common values reference another module.  This in terraform is rough due to having to pass all variables via input/output.  We decided on taking the tact of defining module templates that can be re-used between our environments.
 
+## Installing from Github
+```Bash
+pip install --upgrade git+git://github.com/sstarcher/terraform-templator
+```
+
 ## Usage
 * Consul - To enable consul locking support CONSUL_HTTP_ADDR environment variable must be set
 * TERRAFORM_HOME - If not set it will look into the current directory for terraform files and modules
@@ -28,7 +33,7 @@ In our usage of terraform we wanted to be able to re-use modules with multiple c
 
 * File Structure
 ** terraform-template.yaml
-```!yaml
+```Yaml
 variable: # This is your list of variables that  can be used
     var1: var #This is turned into variable "var1" { default: var } in terraform
     var2: var
@@ -42,7 +47,7 @@ SourceModule:
     NotUsedModule: {}
 ```
 **  files.yaml
-```!yaml
+```Yaml
 SourceModule:
     MyModuleName: {}
     SecondModule:
@@ -56,7 +61,7 @@ SourceModule:
 * Any module template not reference in `files.yaml` will be ignored
 * In the above code `MyModuleName` and `SecondModule` are instantiated.  `MyModuleName` has a default value for `default2` in the template, but `SecondModule` does not.  If `SecondModule` does not define the value `default2` in the `files.yaml` a validation error will occur.
 * Resultant merge would be
-```!yaml
+```Yaml
 SourceModule:
     MyModuleName:
         default1: bob
