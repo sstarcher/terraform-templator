@@ -15,7 +15,6 @@ pip install --upgrade git+git://github.com/sstarcher/terraform-templator
 ```
 
 ## Usage
-* Consul - To enable consul locking support CONSUL_HTTP_ADDR environment variable must be set
 * TERRAFORM_HOME - If not set it will look into the current directory for terraform files and modules
 * TERRAFORM_ENV - sets the default environment folder to use
 
@@ -34,6 +33,9 @@ pip install --upgrade git+git://github.com/sstarcher/terraform-templator
 * File Structure
 ** terraform-template.yaml
 ```Yaml
+CONFIGURATION:
+    consul: #If this block exists a consul locking client will be initialized it follows https://github.com/cablehead/python-consul/blob/master/consul/base.py
+        host: consul.service
 variable: # This is your list of variables that  can be used
     var1: var #This is turned into variable "var1" { default: var } in terraform
     var2: var

@@ -168,6 +168,9 @@ def convert_to_tf(data):
 def process_yaml(yaml_data, filename):
     with open("../terraform-template.yaml", 'r') as stream:
         template = yaml.load(stream)
+        if 'CONFIGURATION' in template:
+            for key, value in template.pop('CONFIGURATION').iteritems():
+                globals()[key].init(value)
 
         for key, value in yaml_data.iteritems():
             if not value or not isinstance(value.itervalues().next(), dict):
