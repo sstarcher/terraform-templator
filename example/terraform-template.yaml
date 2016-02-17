@@ -1,7 +1,7 @@
 variable: {}
 
 MyModule:
-  common:
+  DEFAULTS:
     output: common-value
     value: null
   FirstModule:
