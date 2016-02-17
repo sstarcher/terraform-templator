@@ -12,6 +12,7 @@ session_id = None
 logger = 'requests.packages.urllib3.connectionpool'
 logging.getLogger(logger).setLevel(logging.WARNING)
 
+c = None
 if 'CONSUL_HTTP_ADDR' in os.environ:
     c = consul.Consul()
 
