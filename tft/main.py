@@ -14,15 +14,15 @@ import copy
 logger = logging.getLogger('TF')
 
 
-def apply():
+def apply(args):
     consul.lock()
-    invoke.run('terraform apply')
+    invoke.run('terraform apply '+args)
 
 
-def plan():
+def plan(args):
     consul.lock()
     try:
-        invoke.run('terraform plan')
+        invoke.run('terraform plan '+args)
     except invoke.exceptions.Failure:
         invoke.run('terraform get')
         print 'Running terraform get for you try again.'
@@ -81,13 +81,13 @@ CONSUL_HTTP_ADDR - If set attempts to use Consul for locking of Terraform'''
                         choices=env, help=','.join(env))
     parser.add_argument('-v', '--verbose', action='store_true')
 
-    args = parser.parse_args()
+    args, unknownargs = parser.parse_known_args()
 
     logging.basicConfig(level=logging.INFO)
 
     if args.verbose:
         logger.setLevel(logging.DEBUG)
-    return args
+    return args, unknownargs
 
 
 def deep_merge(a, b, path=[]):
@@ -214,7 +214,7 @@ def main():
     if 'TERRAFORM_HOME' in os.environ:
         os.chdir(os.path.expanduser(os.environ['TERRAFORM_HOME']))
 
-    args = parser()
+    args, unknown_args = parser()
     if args.environment:
         os.chdir(args.environment)
     elif 'TERRAFORM_ENV' in os.environ:
@@ -226,7 +226,7 @@ def main():
         return 1
 
     gather_yaml()
-    commands.get(args.command)()
+    commands.get(args.command)(" ".join(unknown_args))
 
 
 if __name__ == '__main__':  # pragma: no cover
