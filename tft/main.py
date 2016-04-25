@@ -14,15 +14,15 @@ import copy
 logger = logging.getLogger('TF')
 
 
-def apply(args):
-    consul.lock()
-    invoke.run('terraform apply '+args)
+def apply(account, args):
+    consul.lock(account)
+    invoke.run('terraform apply ' + args)
 
 
-def plan(args):
-    consul.lock()
+def plan(account, args):
+    consul.lock(account)
     try:
-        invoke.run('terraform plan '+args)
+        invoke.run('terraform plan ' + args)
     except invoke.exceptions.Failure:
         invoke.run('terraform get')
         print 'Running terraform get for you try again.'
@@ -33,10 +33,10 @@ def show():
 
 
 commands = {
-        "apply": apply,
-        "plan": plan,
-        "show": show,
-    }
+    "apply": apply,
+    "plan": plan,
+    "show": show,
+}
 
 
 class DefaultHelpParser(argparse.ArgumentParser):
@@ -47,7 +47,7 @@ class DefaultHelpParser(argparse.ArgumentParser):
         sys.exit(2)
 
 
-def environments():
+def find_accounts():
     envs = next(os.walk('.'))[1]
     try:
         envs.remove('modules')
@@ -67,8 +67,7 @@ def parser():
         description='''Terraform wrapper for locking and templating''',
         epilog='''Environment Variables:
 TERRAFORM_HOME - Specifies a global Terraform home
-CONSUL_HTTP_ADDR - If set attempts to use Consul for locking of Terraform'''
-        )
+CONSUL_HTTP_ADDR - If set attempts to use Consul for locking of Terraform''')
 
     commands_help = ','.join(commands.keys())
     parser.add_argument('command',
@@ -76,9 +75,10 @@ CONSUL_HTTP_ADDR - If set attempts to use Consul for locking of Terraform'''
                         help=commands_help,
                         metavar="COMMAND")
 
-    env = environments()
-    parser.add_argument('-e', '--environment',
-                        choices=env, help=','.join(env))
+    accounts = find_accounts()
+    parser.add_argument('-a', '--account', required=True,
+                        choices=accounts, help=','.join(accounts))
+    parser.add_argument('-r', '--region', choices=['us-east-1', 'us-west-2'])
     parser.add_argument('-v', '--verbose', action='store_true')
 
     args, unknownargs = parser.parse_known_args()
@@ -146,7 +146,7 @@ def merge_path(data, template, path):
     return deep_merge(template_value, data)
 
 
-def convert_to_tf(data):
+def convert_to_tf(data, home):
     tf = {'module': {}, 'variable': {}}
     for key, value in data.iteritems():
         if key == 'variable':
@@ -156,17 +156,18 @@ def convert_to_tf(data):
             modules = tf['module']
             if not value or not isinstance(value.itervalues().next(), dict):
                 modules[key] = value
-                modules[key]['source'] = '../modules/' + key
+                modules[key]['source'] = home + '/modules/' + key
             else:
                 for module_name, module_data in value.iteritems():
                     modules[module_name] = module_data
-                    modules[module_name]['source'] = '../modules/' + key
+                    modules[module_name]['source'] = home + '/modules/' + key
 
     return tf
 
 
 def process_yaml(yaml_data, filename):
-    with open("../terraform-template.yaml", 'r') as stream:
+    home = os.path.expanduser(os.environ['TERRAFORM_HOME'])
+    with open(home + "/terraform-template.yaml", 'r') as stream:
         template = yaml.load(stream)
         if 'CONFIGURATION' in template:
             for key, value in template.pop('CONFIGURATION').iteritems():
@@ -187,7 +188,7 @@ def process_yaml(yaml_data, filename):
                                                       template, [key, key2])
 
     validate(yaml_data)
-    tf_data = convert_to_tf(yaml_data)
+    tf_data = convert_to_tf(yaml_data, home)
     dump(tf_data, filename)
 
 
@@ -213,20 +214,21 @@ def validate(yaml_data, path=[]):
 def main():
     if 'TERRAFORM_HOME' in os.environ:
         os.chdir(os.path.expanduser(os.environ['TERRAFORM_HOME']))
+    else:
+        os.environ['TERRAFORM_HOME'] = os.getcwd()
 
     args, unknown_args = parser()
-    if args.environment:
-        os.chdir(args.environment)
-    elif 'TERRAFORM_ENV' in os.environ:
-        os.chdir(os.environ['TERRAFORM_ENV'])
-    else:
-        error = "{t.red}Please specify an environment via -e parameter"
-        error = error + " or TERRAFORM_ENV environment variable"
+    if not args.account:
+        error = "{t.red}Please specify an account via -a parameter"
         print(error.format(t=Terminal()))
         return 1
 
+    os.chdir(args.account)
+    if args.region:
+        os.chdir(args.region)
+
     gather_yaml()
-    commands.get(args.command)(" ".join(unknown_args))
+    commands.get(args.command)(args.account, " ".join(unknown_args))
 
 
 if __name__ == '__main__':  # pragma: no cover

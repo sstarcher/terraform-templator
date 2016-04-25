@@ -17,7 +17,7 @@ def init(config):
     client = consul.Consul(**config)
 
 
-def lock():
+def lock(key):
     if not client:
         return
     global session_id
@@ -26,7 +26,7 @@ def lock():
         sys.exit(1)
 
     session_id = client.session.create(name=getpass.getuser(), lock_delay=0)
-    aquired_lock = client.kv.put('terraform', None, acquire=session_id)
+    aquired_lock = client.kv.put('terraform/' + key, None, acquire=session_id)
     if not aquired_lock:
         lockers_session = client.kv.get('terraform')[1]['Session']
         user = client.session.info(lockers_session)[1]['Name']
