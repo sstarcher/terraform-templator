@@ -78,7 +78,8 @@ CONSUL_HTTP_ADDR - If set attempts to use Consul for locking of Terraform''')
     accounts = find_accounts()
     parser.add_argument('-a', '--account', required=True,
                         choices=accounts, help=','.join(accounts))
-    parser.add_argument('-r', '--region', choices=['us-east-1', 'us-west-2'])
+    parser.add_argument('-e', '--environment',
+                        help='Any subfolders underneath the account')
     parser.add_argument('-v', '--verbose', action='store_true')
 
     args, unknownargs = parser.parse_known_args()
@@ -224,8 +225,8 @@ def main():
         return 1
 
     os.chdir(args.account)
-    if args.region:
-        os.chdir(args.region)
+    if args.environment:
+        os.chdir(args.environment)
 
     gather_yaml()
     commands.get(args.command)(args.account, " ".join(unknown_args))
