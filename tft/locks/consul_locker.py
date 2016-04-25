@@ -28,7 +28,7 @@ def lock(key):
     session_id = client.session.create(name=getpass.getuser(), lock_delay=0)
     aquired_lock = client.kv.put('terraform/' + key, None, acquire=session_id)
     if not aquired_lock:
-        lockers_session = client.kv.get('terraform')[1]['Session']
+        lockers_session = client.kv.get('terraform/' + key)[1]['Session']
         user = client.session.info(lockers_session)[1]['Name']
         message = '{t.red}{}{t.normal} is using Terraform'
         print message.format(user, t=Terminal())
