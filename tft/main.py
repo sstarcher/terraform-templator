@@ -12,20 +12,20 @@ logger = logging.getLogger('TF')
 
 
 def prepare():
-    invoke.run('terraform fmt > /dev/null')
-    invoke.run('terraform get > /dev/null')
+    invoke.run('terraform fmt', warn=True, hide='out')
+    invoke.run('terraform get', warn=True, hide='out')
 
 
 def apply(account, args):
     prepare()
     consul.lock(account)
-    invoke.run('terraform apply ' + args)
+    invoke.run('terraform apply ' + args, warn=True)
 
 
 def plan(account, args):
     prepare()
     consul.lock(account)
-    invoke.run('terraform plan ' + args)
+    invoke.run('terraform plan ' + args, warn=True)
 
 commands = {
     "apply": apply,
